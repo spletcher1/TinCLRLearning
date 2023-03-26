@@ -25,9 +25,26 @@ namespace PumpControl2023
                 return Resources.manager;
             }
         }
+        internal static System.Drawing.Bitmap GetBitmap(Resources.BitmapResources id)
+        {
+            return ((System.Drawing.Bitmap)(ResourceManager.GetObject(((short)(id)))));
+        }
         internal static System.Drawing.Font GetFont(Resources.FontResources id)
         {
             return ((System.Drawing.Font)(ResourceManager.GetObject(((short)(id)))));
+        }
+        [System.SerializableAttribute()]
+        internal enum BitmapResources : short
+        {
+            Hands = -29335,
+            Template = -21726,
+            settingImage = -17023,
+            Pwm = -9888,
+            Piezo = -5876,
+            Vial = -92,
+            Uart = 11521,
+            Rtc = 14704,
+            Bottle = 23642,
         }
         [System.SerializableAttribute()]
         internal enum FontResources : short

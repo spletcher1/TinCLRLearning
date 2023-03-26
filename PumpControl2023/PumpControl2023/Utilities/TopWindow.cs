@@ -20,9 +20,9 @@ namespace PumpControl2023
         private readonly StackPanel mainStackPanel;
         private StackPanel[] iconStackPanels;
 
-        const int IconColum = 6;
-        const int IconRow = 3;
-        const int MaxWindows = IconColum * IconRow;
+        const int IconColumn = 4;
+        const int IconRow = 2;
+        const int MaxWindows = IconColumn * IconRow;
 
         private ArrayList applicationWindows;
 
@@ -34,9 +34,7 @@ namespace PumpControl2023
             this.mainStackPanel = new StackPanel(Orientation.Vertical);
             this.Child = this.mainStackPanel;
 
-            this.Background = new LinearGradientBrush(Colors.Blue, Colors.Teal, 0, 0, width, height);
-
-
+            this.Background = new LinearGradientBrush(Colors.Red, Colors.Gray, 0, 0, width, height);
 
             this.CreateTopBar();
             this.CreateIcons();
@@ -46,7 +44,7 @@ namespace PumpControl2023
 
         private void CreateTopBar()
         {
-            var topbar = new TopBar(this.Width, "Demo App", true);
+            var topbar = new TopBar(this.Width, "Pump Control 2023!!", true);
             this.topBar = topbar.Child;
         }
 
@@ -83,21 +81,21 @@ namespace PumpControl2023
 
             aw.Parent = this;
             aw.Id = this.applicationWindows.Count;
-            aw.Icon.Width = this.Width / IconColum;
+            aw.Icon.Width = this.Width / IconColumn;
             aw.Icon.Height = aw.Icon.Width;
 
-            var r = this.applicationWindows.Count / IconColum;
+            var r = this.applicationWindows.Count / IconColumn;
 
             this.applicationWindows.Add(aw);
 
             this.iconStackPanels[r].Children.Clear();
 
-            for (var i = 0; i < IconColum; i++)
+            for (var i = 0; i < IconColumn; i++)
             {
-                if (r * IconColum + i >= this.applicationWindows.Count)
+                if (r * IconColumn + i >= this.applicationWindows.Count)
                     break;
 
-                var a = (ApplicationWindow)this.applicationWindows[r * IconColum + i];
+                var a = (ApplicationWindow)this.applicationWindows[r * IconColumn + i];
 
                 if (a != null)
                 {
