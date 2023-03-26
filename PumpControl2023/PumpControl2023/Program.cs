@@ -33,7 +33,7 @@ namespace PumpControl2023
            
 
             // Create System Window            
-            Bitmap iconImageSystem = Resources.GetBitmap(Resources.BitmapResources.Hands);
+            Bitmap iconImageSystem = Resources.GetBitmap(Resources.BitmapResources.test);
             string iconTextSystem = "System Information";
             var systemWindow = new SystemWindow(iconImageSystem, iconTextSystem, TMPDisplay.Width, TMPDisplay.Height);
 

@@ -34,19 +34,6 @@ namespace PumpControl2023
             return ((System.Drawing.Font)(ResourceManager.GetObject(((short)(id)))));
         }
         [System.SerializableAttribute()]
-        internal enum BitmapResources : short
-        {
-            Hands = -29335,
-            Template = -21726,
-            settingImage = -17023,
-            Pwm = -9888,
-            Piezo = -5876,
-            Vial = -92,
-            Uart = 11521,
-            Rtc = 14704,
-            Bottle = 23642,
-        }
-        [System.SerializableAttribute()]
         internal enum FontResources : short
         {
             droid_reg10 = -27850,
@@ -59,6 +46,16 @@ namespace PumpControl2023
             droid_reg08 = -7427,
             droid_reg32 = 14655,
             droid_reg48 = 24547,
+        }
+        [System.SerializableAttribute()]
+        internal enum BitmapResources : short
+        {
+            Template = -21726,
+            settingImage = -17023,
+            Pwm = -9888,
+            Piezo = -5876,
+            Uart = 11521,
+            Rtc = 14704,
         }
     }
 }
