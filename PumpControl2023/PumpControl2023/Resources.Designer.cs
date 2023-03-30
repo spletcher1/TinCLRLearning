@@ -52,10 +52,14 @@ namespace PumpControl2023
         {
             Template = -21726,
             settingImage = -17023,
-            Pwm = -9888,
-            Piezo = -5876,
+            Timer = -11815,
+            AnotherBottle = -3473,
+            AnotherCage = 10911,
             Uart = 11521,
             Rtc = 14704,
+            AnotherVial = 14726,
+            AnotherHands = 17919,
+            AnotherPlate = 23589,
         }
     }
 }

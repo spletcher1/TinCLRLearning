@@ -26,14 +26,12 @@ namespace PumpControl2023
             if (icon != null)
             {
                 var gfx = Graphics.FromImage(icon);
-
                 gfx.MakeTransparent(System.Drawing.Color.FromArgb(0x00FF00F2));  // MakeTransparent is only available from TinyCLR OS rc2
-                //gfx.MakeTransparent(System.Drawing.Color.(0x00ED1C24));
                 this.bitmapImage = BitmapImage.FromGraphics(gfx);
             }
 
             this.IconText = text;
-            this.Font = Resources.GetFont(Resources.FontResources.droid_reg09);
+            this.Font = Resources.GetFont(Resources.FontResources.droid_reg14);
 
             TextColor = Colors.White;
         }
@@ -62,7 +60,7 @@ namespace PumpControl2023
             {
                 var text = this.IconText;
 
-                dc.DrawText(ref text, this.Font, TextColor, 0, h - this.Font.Height, w, this.Font.Height, TextAlignment.Center, TextTrimming.None);
+                dc.DrawText(ref text, this.Font, TextColor, 5, h - this.Font.Height, w, this.Font.Height, TextAlignment.Center, TextTrimming.None);
             }
 
         }
