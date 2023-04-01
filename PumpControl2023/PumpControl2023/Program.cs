@@ -34,9 +34,9 @@ namespace PumpControl2023
             // Create System Window            
             Bitmap iconImageSystem = Resources.GetBitmap(Resources.BitmapResources.AnotherVial);
             string iconTextSystem = "Vials";
-            var systemWindow = new SystemWindow(iconImageSystem, iconTextSystem, theBoard.DisplayWidth, theBoard.DisplayHeight);
+            var vialWindow = new VialDispenseWindow(iconImageSystem, iconTextSystem, theBoard.DisplayWidth, theBoard.DisplayHeight);
 
-            mainWindow.RegisterWindow(systemWindow); // Register to MainWindow            
+            mainWindow.RegisterWindow(vialWindow); // Register to MainWindow            
 
 
             Bitmap iconImageSystem2 = Resources.GetBitmap(Resources.BitmapResources.AnotherBottle);

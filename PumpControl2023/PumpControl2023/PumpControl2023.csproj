@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="ApplicationWindow.cs" />
     <Compile Include="BottomBar.cs" />
+    <Compile Include="DispenseSetting.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="FEZBoard.cs" />
     <Compile Include="Icon.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Windows\TimerWindow.cs" />
     <Compile Include="Utilities\TopBar.cs" />
     <Compile Include="Utilities\TopWindow.cs" />
+    <Compile Include="Windows\VialDispenseWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
