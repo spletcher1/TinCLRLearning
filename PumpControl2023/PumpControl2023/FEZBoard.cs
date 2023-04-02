@@ -22,8 +22,15 @@ namespace PumpControl2023
         protected GpioPin Button2;
         protected GpioPin buzzer;
 
+        protected GpioPin pumpTriggerPin;
+        protected GpioPin pumpReversePin;
+        protected GpioPin pumpPrimePin;
+
         protected PwmController buzzerPWMController;
         protected PwmChannel buzzerPWMChannel;
+
+        protected PwmController userPWMController;
+        protected PwmChannel userPWMChannel;
 
         public delegate void ButtonPressedHandler();
 
@@ -32,6 +39,24 @@ namespace PumpControl2023
         
         protected RtcController theRTCController;
 
+        #region Properties
+
+        public GpioPin PumpTriggerPin
+        {
+            get { return pumpTriggerPin; }  
+        }
+
+        public GpioPin PumpReversePin
+        {
+            get { return pumpReversePin; }
+        }
+
+        public GpioPin PumpPrimePin
+        {
+            get { return pumpPrimePin; }
+        }
+
+        #endregion
 
         public SPFEZBoard()
         {
@@ -44,6 +69,15 @@ namespace PumpControl2023
 
         public abstract void SetLed(int led, bool on);
         public abstract void ToggleLed(int led);
+
+        public void SetUserPWM(int freq, double dutyCycle)
+        {
+            if (userPWMController != null && userPWMChannel != null)
+            {
+                userPWMController.SetDesiredFrequency(freq);
+                userPWMChannel.SetActiveDutyCyclePercentage(dutyCycle);
+            }
+        }
 
         public bool UserLED
         {
@@ -144,11 +178,7 @@ namespace PumpControl2023
         {
             userLED = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PB0);
             userLED.SetDriveMode(GpioPinDriveMode.Output);
-            UserLED = true;
-
-            buzzer = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PB1);
-            buzzer.SetDriveMode(GpioPinDriveMode.Output);
-            Buzzer = false;
+            UserLED = true;       
 
             Button1 = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PE3);
             Button1.SetDriveMode(GpioPinDriveMode.InputPullUp);
@@ -162,6 +192,7 @@ namespace PumpControl2023
 
             InitializeRTC();
             InitializeBuzzer();
+            InitializeUserPWM();
         }
 
         void InitializeRTC()
@@ -197,6 +228,13 @@ namespace PumpControl2023
             Buzzer = false;
         }
 
+        void InitializeUserPWM()
+        {
+            userPWMController = GHIElectronics.TinyCLR.Devices.Pwm.PwmController.FromName(SC20260.Timer.Pwm.Controller2.Id);
+            userPWMChannel = userPWMController.OpenChannel(SC20260.Timer.Pwm.Controller2.PB3);
+            SetUserPWM(1000, 0.5);
+            userPWMChannel.Start();
+        }
 
         public override void SetLed(int num, bool on)
         {
@@ -282,6 +320,7 @@ namespace PumpControl2023
 
         public SCM20260D() : base()
         {
+            bool a, b, c;
             userLED = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PB0);
             userLED.SetDriveMode(GpioPinDriveMode.Output);
 
@@ -296,16 +335,27 @@ namespace PumpControl2023
             Button1.ValueChanged += Button1_ValueChanged;
             Button2 = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PB7);
             Button2.SetDriveMode(GpioPinDriveMode.Input);
-       
+         
+            pumpTriggerPin = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PF6);       
+            pumpTriggerPin.SetDriveMode(GpioPinDriveMode.OutputOpenDrain);            
+            pumpTriggerPin.Write(GpioPinValue.High);
+
+            pumpReversePin= GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PF7);
+            pumpReversePin.SetDriveMode(GpioPinDriveMode.OutputOpenDrain);
+            pumpReversePin.Write(GpioPinValue.High);
+
+            pumpPrimePin = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PF8);
+            pumpPrimePin.SetDriveMode(GpioPinDriveMode.OutputOpenDrain);
+            pumpPrimePin.Write(GpioPinValue.High);
+
             theDisplay = new SCM26260D_Display();
-            Input.Touch.InitializeTouch();
+            Input.Touch.InitializeTouch();            
 
             InitializeRTC();
             InitializeBuzzer();
+            InitializeUserPWM();
             
         }
-
-
 
         void InitializeBuzzer()
         {
@@ -314,7 +364,14 @@ namespace PumpControl2023
             SetBuzzer(500, 0.5);
             Buzzer = false;
         }
-
+        void InitializeUserPWM()
+        {           
+            userPWMController = GHIElectronics.TinyCLR.Devices.Pwm.PwmController.FromName(SC20260.Timer.Pwm.Controller8.Id);
+            userPWMChannel = userPWMController.OpenChannel(SC20260.Timer.Pwm.Controller8.PI6);
+            userPWMController.SetDesiredFrequency(2000);
+            userPWMChannel.SetActiveDutyCyclePercentage(0.00);
+            userPWMChannel.Start();            
+        }
 
         void InitializeRTC()
         {

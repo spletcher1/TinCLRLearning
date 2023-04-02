@@ -26,6 +26,7 @@ namespace PumpControl2023
         static void Main()
         {
             SCM20260D theBoard = new SCM20260D();
+            PumpControl thePump = new PumpControl(theBoard);
            
             MainApp = new Program(theBoard.DisplayController);
             MainWindow mainWindow = new MainWindow(theBoard.DisplayWidth, theBoard.DisplayHeight);
@@ -34,7 +35,7 @@ namespace PumpControl2023
             // Create System Window            
             Bitmap iconImageSystem = Resources.GetBitmap(Resources.BitmapResources.AnotherVial);
             string iconTextSystem = "Vials";
-            var vialWindow = new VialDispenseWindow(iconImageSystem, iconTextSystem, theBoard.DisplayWidth, theBoard.DisplayHeight);
+            var vialWindow = new VialDispenseWindow(iconImageSystem, iconTextSystem, theBoard.DisplayWidth, theBoard.DisplayHeight,thePump);
 
             mainWindow.RegisterWindow(vialWindow); // Register to MainWindow            
 
@@ -59,7 +60,7 @@ namespace PumpControl2023
             mainWindow.RegisterWindow(systemWindow2);
             mainWindow.RegisterWindow(systemWindow3);
             mainWindow.RegisterWindow(systemWindow4);
-            mainWindow.RegisterWindow(timerWindow);
+            mainWindow.RegisterWindow(timerWindow);            
             MainApp.Run(mainWindow);            
         }
 

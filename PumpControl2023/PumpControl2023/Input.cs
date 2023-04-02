@@ -32,7 +32,7 @@ namespace PumpControl2023
                 var gpioController = GpioController.GetDefault();
                 var interrupt = gpioController.OpenPin(SC20260.GpioPin.PJ14);
 
-                touch = new FT5xx6Controller(i2cDevice, interrupt);
+                touch = new FT5xx6Controller(i2cDevice, interrupt);                
                 touch.TouchDown += Touch_TouchDown;
                 touch.TouchUp += Touch_TouchUp;
             }
