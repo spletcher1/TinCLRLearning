@@ -8,32 +8,77 @@ namespace PumpControl2023
     public class PumpControl
     {
         SPFEZBoard theBoard;
+        int speed;
         public PumpControl(SPFEZBoard board)
         {
             theBoard = board;
         }
 
-        public void SetSpeed(int value)
+        public int Speed
         {
-            if (value <= 0)
-                theBoard.SetUserPWM(2000, 0.0);
-            else if (value >= 100)
-                theBoard.SetUserPWM(2000, 1.0);
-            else
+            get
             {
-                float tmp = value / 100.0f;
-                theBoard.SetUserPWM(2000,tmp);
+                return speed;
+            }
+            set
+            {
+                speed = value;
+                if (value <= 0) {
+                    speed = 0;
+                    theBoard.SetUserPWM(2000, 0.0);
+                }
+                else if (value >= 100) { 
+                    speed = 100;
+                    theBoard.SetUserPWM(2000, 1.0);
+                }
+                else
+                {
+                    speed = value;
+                    float tmp = value / 100.0f;
+                    theBoard.SetUserPWM(2000, tmp);
+                }
+                
+            }
+        }
+        
+        public bool IsPriming
+        {
+            get
+            {
+                if (theBoard.PumpPrimePin.Read() == GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.Low)                
+                    return true;                
+                else
+                    return false;
             }
         }
 
+        public bool IsDirectionForward
+        {
+            get
+            {
+                return (theBoard.PumpReversePin.Read() == GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.High);
+            }
+        }
+
+        public string CurrentDirection
+        {
+            get
+            {
+                if (theBoard.PumpReversePin.Read() == GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.Low)
+                    return "Forward";
+                else
+                    return "Reverse";
+            }
+        }       
+
         public void SetForwardDirection()
         {
-            theBoard.PumpReversePin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.Low);
+            theBoard.PumpReversePin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.High);
         }
 
         public void SetReverseDirection()
         {
-            theBoard.PumpReversePin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.High);
+            theBoard.PumpReversePin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.Low);
         }
 
         public void TurnPrimeOn()
@@ -60,6 +105,5 @@ namespace PumpControl2023
             Thread.Sleep(50);
             theBoard.PumpTriggerPin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.High);            
         }
-
     }
 }

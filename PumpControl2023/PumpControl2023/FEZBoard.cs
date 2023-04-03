@@ -14,6 +14,22 @@ using System.Diagnostics;
 
 namespace PumpControl2023
 {
+
+    // This class presents and interface to the pump using one of the two FEZ boards that I 
+    // have for development and implementation (Portal)
+
+    // For the Dev Board SCM20260D Dev with 480 x 272 Touchscreen
+    // PI6 is pwm for output voltage control for pump speed
+    // PB1 is Buzzer
+    // PB0 is UserLED
+    // PH11 is LED2
+    // PF6 is pump trigger (Open drain) - Green wire in remote control cable - Yellow wire is ground
+    // PF7 is pump forward/reverse (open drain) - Blue wire in remote control cable - Yellow wire is ground
+    // PF8 is pump prime (open drain) - Orange wire in remote control cable - Yellow wire is ground
+
+
+
+
     abstract public class SPFEZBoard
     {
         protected GpioPin userLED;
@@ -319,8 +335,7 @@ namespace PumpControl2023
 
 
         public SCM20260D() : base()
-        {
-            bool a, b, c;
+        {            
             userLED = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PB0);
             userLED.SetDriveMode(GpioPinDriveMode.Output);
 

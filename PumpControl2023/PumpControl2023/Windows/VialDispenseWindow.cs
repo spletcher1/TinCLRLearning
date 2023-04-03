@@ -55,6 +55,134 @@ namespace PumpControl2023
 
         bool cancelDispenseThread;
 
+        #region Properties
+        int CurrentSpeed
+        {
+            get
+            {
+                return thePump.Speed;
+            }
+            set
+            {
+                currentSetting.Speed = value;
+                if (currentSetting.Speed < 0) currentSetting.Speed = 0;
+                else if(currentSetting.Speed > 100) currentSetting.Speed = 100;
+                if(thePump != null)
+                    thePump.Speed = currentSetting.Speed;
+                if(speedText !=null) { 
+                    speedText.TextContent = CurrentSpeedString;
+                    speedText.Invalidate();
+                }
+            }
+        }
+
+        string CurrentSpeedString
+        {
+            get
+            {
+                string tmp = CurrentSpeed.ToString("D");
+                if (thePump.IsDirectionForward)
+                    tmp = tmp + " (F)";
+                else
+                    tmp = tmp + " (R)";
+                return tmp;
+            }
+        }
+
+        float CurrentInterval
+        {
+            get
+            {
+                return currentSetting.Interval;
+            }
+            set
+            {
+                currentSetting.Interval = value;
+                if (currentSetting.Interval < 0) currentSetting.Interval = 0.0f;
+                if (intervalText != null)
+                {
+                    intervalText.TextContent = currentSetting.Interval.ToString("F1");
+                    intervalText.Invalidate();
+                }
+            }
+        }
+        float CurrentDuration
+        {
+            get
+            {
+                return currentSetting.Duration;
+            }
+            set
+            {
+                currentSetting.Duration = value;
+                if (currentSetting.Duration < 0) currentSetting.Duration = 0.0f;
+                if(durationText != null) { 
+                    durationText.TextContent = currentSetting.Duration.ToString("F1");
+                    durationText.Invalidate();
+                }
+
+            }
+        }
+
+        int CurrentReps
+        {
+            get { return currentSetting.Reps; }
+            set {                 
+                currentSetting.Reps = value; 
+                if(currentSetting.Reps < 0)
+                    currentSetting.Reps = 0;
+                if(repsText != null) {
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        repsText.TextContent = currentSetting.Reps.ToString("D");
+                        repsText.Invalidate();
+                        return null;
+                    }, null);                    
+                }
+            }
+        }
+
+        string CurrentRepsString
+        {
+            get
+            {
+                return CurrentReps.ToString("D");
+            }
+        }
+
+        string CurrentIntervalString
+        {
+            get
+            {
+                return CurrentInterval.ToString("F1");
+            }
+        }
+
+        string CurrentDurationString
+        {
+            get
+            {
+                return CurrentDuration.ToString("F1");
+            }
+        }
+
+        DispenseSetting CurrentSetting
+        {
+            get
+            {
+                return currentSetting;
+            }
+            set
+            {
+                CurrentInterval = value.Interval;
+                CurrentSpeed = value.Speed;
+                CurrentReps = value.Reps;
+                CurrentDuration = value.Duration;
+            }
+        }
+
+        #endregion
+
+        #region UI
         public VialDispenseWindow(Bitmap icon, string text, int width, int height,PumpControl pump) : base(icon, text, width, height)
         {
             thePump = pump;
@@ -63,23 +191,18 @@ namespace PumpControl2023
         private void CreateWindow()
         {
             currentSetting = new DispenseSetting();
-
             AddText();
             AddButtons();
             SetEditingMode(0);
             StopDispensing();
-            SetPumpValues();
+
+            CurrentSetting = new DispenseSetting();
             // Enable TopBar
             Canvas.SetLeft(this.TopBar, 0); Canvas.SetTop(this.TopBar, 0);
             this.canvas.Children.Add(this.TopBar);     
-            
-           
-        }
+                       
+        }      
 
-        void SetPumpValues()
-        {
-            thePump.SetSpeed(currentSetting.Speed);
-        }
         void AddText()
         {          
             var font = Resources.GetFont(Resources.FontResources.droid_reg18);
@@ -121,22 +244,22 @@ namespace PumpControl2023
             this.canvas.Children.Add(durationLabel);
             this.canvas.Children.Add(intervalLabel);
 
-            repsText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, currentSetting.Reps.ToString("D"))
+            repsText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, CurrentRepsString)
             {
                 ForeColor = Colors.White,
             };
 
-            speedText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, currentSetting.Speed.ToString("D"))
+            speedText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, CurrentSpeedString)
             {
                 ForeColor = Colors.White,
             };
 
-            durationText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, currentSetting.Duration.ToString("F1"))
+            durationText = new GHIElectronics.TinyCLR.UI.Controls.Text(font,CurrentDurationString )
             {
                 ForeColor = Colors.White,
             };
 
-            intervalText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, currentSetting.Interval.ToString("F1"))
+            intervalText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, CurrentIntervalString)
             {
                 ForeColor = Colors.White,
             };
@@ -155,10 +278,7 @@ namespace PumpControl2023
             this.canvas.Children.Add(speedText);
             this.canvas.Children.Add(durationText);
             this.canvas.Children.Add(intervalText);
-
         }
-
-
 
         private void SpeedText_TouchUp(object sender, GHIElectronics.TinyCLR.UI.Input.TouchEventArgs e)
         {
@@ -186,97 +306,14 @@ namespace PumpControl2023
             }
         }
 
-        void SetEditingMode(int mode)
-        {
-            switch (mode)
-            {
-                case 0: //Clear editing mode                    
-                    repsLabel.ForeColor = Colors.White;
-                    durationLabel.ForeColor = Colors.White;
-                    speedLabel.ForeColor = Colors.White;
-                    intervalLabel.ForeColor = Colors.White;
-                    repsText.ForeColor = Colors.White;
-                    speedText.ForeColor = Colors.White;
-                    intervalText.ForeColor = Colors.White;
-                    durationText.ForeColor = Colors.White;
-                    bigMinusButton.IsEnabled = false;
-                    bigPlusButton.IsEnabled = false;
-                    smallMinusButton.IsEnabled = false;
-                    smallPlusButton.IsEnabled = false;                    
-                    editingMode = 0;
-                    break;
-                case 1: //Reps                    
-                    textBigPlus.TextContent = "+10x";
-                    textSmallPlus.TextContent = "+1x";
-                    textBigMinus.TextContent = "-10x";
-                    textSmallMinus.TextContent = "-1x";
-                    repsLabel.ForeColor = Colors.Red;
-                    repsText.ForeColor = Colors.Red;
-                    bigMinusButton.IsEnabled = true;
-                    bigPlusButton.IsEnabled = true;
-                    smallMinusButton.IsEnabled = true;
-                    smallPlusButton.IsEnabled = true;
-                    editingMode = 1;
-                    bigPlusButton.Invalidate();
-                    break;
-                case 2: //Speed                    
-                    textBigPlus.TextContent = "+10x";
-                    textSmallPlus.TextContent = "+1x";
-                    textBigMinus.TextContent = "-10x";
-                    textSmallMinus.TextContent = "-1x";
-                    speedLabel.ForeColor = Colors.Red;
-                    speedText.ForeColor = Colors.Red;
-                    bigMinusButton.IsEnabled = true;
-                    bigPlusButton.IsEnabled = true;
-                    smallMinusButton.IsEnabled = true;
-                    smallPlusButton.IsEnabled = true;
-                    bigPlusButton.Invalidate();
-                    editingMode = 2;
-                    break;
-                case 3: //Duration                    
-                    textBigPlus.TextContent = "+1s";
-                    textSmallPlus.TextContent = "+0.1s";
-                    textBigMinus.TextContent = "-1s";
-                    textSmallMinus.TextContent = "-0.1s";
-                    durationLabel.ForeColor = Colors.Red;
-                    durationText.ForeColor = Colors.Red;
-                    bigMinusButton.IsEnabled = true;
-                    bigPlusButton.IsEnabled = true;
-                    smallMinusButton.IsEnabled = true;
-                    smallPlusButton.IsEnabled = true;
-                    bigPlusButton.Invalidate();
-                    editingMode = 3;
-                    break;
-                case 4: //Interval                  
-                    textBigPlus.TextContent = "+1s";
-                    textSmallPlus.TextContent = "+0.1s";
-                    textBigMinus.TextContent = "-1s";
-                    textSmallMinus.TextContent = "-0.1s";
-                    intervalLabel.ForeColor = Colors.Red;
-                    intervalText.ForeColor = Colors.Red;
-                    bigMinusButton.IsEnabled = true;
-                    bigPlusButton.IsEnabled = true;
-                    smallMinusButton.IsEnabled = true;
-                    smallPlusButton.IsEnabled = true;
-                    bigPlusButton.Invalidate();
-                    editingMode = 4;
-                    break;                 
-            }
-            bigPlusButton.Invalidate();
-            smallPlusButton.Invalidate();
-            bigMinusButton.Invalidate();
-            smallMinusButton.Invalidate();
-        }
-
-
         private void IntervalText_TouchUp(object sender, GHIElectronics.TinyCLR.UI.Input.TouchEventArgs e)
         {
             if (isDispensing) return;
-            if (editingMode==4)
+            if (editingMode == 4)
             {
                 SetEditingMode(0);
             }
-            else if (editingMode==0)
+            else if (editingMode == 0)
             {
                 SetEditingMode(4);
             }
@@ -285,7 +322,7 @@ namespace PumpControl2023
         private void DurationText_TouchUp(object sender, GHIElectronics.TinyCLR.UI.Input.TouchEventArgs e)
         {
             if (isDispensing) return;
-            if (editingMode==3)
+            if (editingMode == 3)
             {
                 SetEditingMode(0);
 
@@ -295,7 +332,6 @@ namespace PumpControl2023
                 SetEditingMode(3);
             }
         }
-
         private void AddButtons()
         {
             var font = Resources.GetFont(Resources.FontResources.droid_reg14);
@@ -320,7 +356,7 @@ namespace PumpControl2023
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
-            
+
             var textM1 = new Text(font2, "52-1\n1-43")
             {
                 VerticalAlignment = VerticalAlignment.Center,
@@ -477,7 +513,7 @@ namespace PumpControl2023
             GoButton.Click += GoButton_Click;
             StopButton.Click += StopButton_Click;
             PrimerButton.Click += PrimerButton_Click;
-            DirectionButton.Click += DirectionButton_Click;            
+            DirectionButton.Click += DirectionButton_Click;
 
             M1Button.Click += M1Button_Click;
 
@@ -529,6 +565,14 @@ namespace PumpControl2023
             if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
             {
                 thePump.ToggleDirection();
+                Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                    if (speedText != null)
+                    {
+                        speedText.TextContent = CurrentSpeedString;
+                        speedText.Invalidate();
+                    }
+                    return null;
+                }, null);
             }
         }
 
@@ -537,7 +581,8 @@ namespace PumpControl2023
             if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
             {
                 thePump.TurnPrimeOff();
-            } else if(e.RoutedEvent.Name.CompareTo("TouchDownEvent") == 0)
+            }
+            else if (e.RoutedEvent.Name.CompareTo("TouchDownEvent") == 0)
             {
                 thePump.TurnPrimeOn();
             }
@@ -549,6 +594,206 @@ namespace PumpControl2023
             {
                 StopDispensing();
             }
+        }
+
+        private void GoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isDispensing) return;
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                StartDispensing();
+            }
+        }
+
+        private void SmallMinusButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isDispensing) return;
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                switch (editingMode)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        CurrentReps -= 1;
+                        break;
+                    case 2:
+                        CurrentSpeed -= 1;
+                        break;
+                    case 3:
+                        CurrentDuration -= 0.1f;
+                        break;
+                    case 4:
+                        CurrentInterval -= 0.1f;
+                        break;
+                }
+            }
+        }
+
+        private void BigMinusButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isDispensing) return;
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                switch (editingMode)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        CurrentReps -= 10;
+                        break;
+                    case 2:
+                        CurrentSpeed -= 10;
+                        break;
+                    case 3:
+                        CurrentDuration -= 1.0f;
+                        break;
+                    case 4:
+                        CurrentInterval -= 1.0f;
+                        break;
+                }
+            }
+        }
+
+        private void SmallPlusButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isDispensing) return;
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                switch (editingMode)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        CurrentReps += 1;
+                        break;
+                    case 2:
+                        CurrentSpeed += 1;
+                        break;
+                    case 3:
+                        CurrentDuration += .10f;
+                        break;
+                    case 4:
+                        CurrentInterval += .10f;
+                        break;
+                }
+            }
+        }
+
+        private void BigPlusButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isDispensing) return;
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                switch (editingMode)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        CurrentReps += 10;
+                        break;
+                    case 2:
+                        CurrentSpeed += 10;
+                        break;
+                    case 3:
+                        CurrentDuration += 1.0f;
+                        break;
+                    case 4:
+                        CurrentInterval += 1.0f;
+                        break;
+                }
+            }
+        }
+
+        private void M1Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (isDispensing) return;
+            textBigPlus.TextContent = "Hi";
+        }
+
+        #endregion
+
+        #region General Functions
+        void SetEditingMode(int mode)
+        {
+            switch (mode)
+            {
+                case 0: //Clear editing mode                    
+                    repsLabel.ForeColor = Colors.White;
+                    durationLabel.ForeColor = Colors.White;
+                    speedLabel.ForeColor = Colors.White;
+                    intervalLabel.ForeColor = Colors.White;
+                    repsText.ForeColor = Colors.White;
+                    speedText.ForeColor = Colors.White;
+                    intervalText.ForeColor = Colors.White;
+                    durationText.ForeColor = Colors.White;
+                    bigMinusButton.IsEnabled = false;
+                    bigPlusButton.IsEnabled = false;
+                    smallMinusButton.IsEnabled = false;
+                    smallPlusButton.IsEnabled = false;                    
+                    editingMode = 0;
+                    break;
+                case 1: //Reps                    
+                    textBigPlus.TextContent = "+10x";
+                    textSmallPlus.TextContent = "+1x";
+                    textBigMinus.TextContent = "-10x";
+                    textSmallMinus.TextContent = "-1x";
+                    repsLabel.ForeColor = Colors.Red;
+                    repsText.ForeColor = Colors.Red;
+                    bigMinusButton.IsEnabled = true;
+                    bigPlusButton.IsEnabled = true;
+                    smallMinusButton.IsEnabled = true;
+                    smallPlusButton.IsEnabled = true;
+                    editingMode = 1;
+                    bigPlusButton.Invalidate();
+                    break;
+                case 2: //Speed                    
+                    textBigPlus.TextContent = "+10x";
+                    textSmallPlus.TextContent = "+1x";
+                    textBigMinus.TextContent = "-10x";
+                    textSmallMinus.TextContent = "-1x";
+                    speedLabel.ForeColor = Colors.Red;
+                    speedText.ForeColor = Colors.Red;
+                    bigMinusButton.IsEnabled = true;
+                    bigPlusButton.IsEnabled = true;
+                    smallMinusButton.IsEnabled = true;
+                    smallPlusButton.IsEnabled = true;
+                    bigPlusButton.Invalidate();
+                    editingMode = 2;
+                    break;
+                case 3: //Duration                    
+                    textBigPlus.TextContent = "+1s";
+                    textSmallPlus.TextContent = "+0.1s";
+                    textBigMinus.TextContent = "-1s";
+                    textSmallMinus.TextContent = "-0.1s";
+                    durationLabel.ForeColor = Colors.Red;
+                    durationText.ForeColor = Colors.Red;
+                    bigMinusButton.IsEnabled = true;
+                    bigPlusButton.IsEnabled = true;
+                    smallMinusButton.IsEnabled = true;
+                    smallPlusButton.IsEnabled = true;
+                    bigPlusButton.Invalidate();
+                    editingMode = 3;
+                    break;
+                case 4: //Interval                  
+                    textBigPlus.TextContent = "+1s";
+                    textSmallPlus.TextContent = "+0.1s";
+                    textBigMinus.TextContent = "-1s";
+                    textSmallMinus.TextContent = "-0.1s";
+                    intervalLabel.ForeColor = Colors.Red;
+                    intervalText.ForeColor = Colors.Red;
+                    bigMinusButton.IsEnabled = true;
+                    bigPlusButton.IsEnabled = true;
+                    smallMinusButton.IsEnabled = true;
+                    smallPlusButton.IsEnabled = true;
+                    bigPlusButton.Invalidate();
+                    editingMode = 4;
+                    break;                 
+            }
+            bigPlusButton.Invalidate();
+            smallPlusButton.Invalidate();
+            bigMinusButton.Invalidate();
+            smallMinusButton.Invalidate();
         }
 
         void StopDispensing()
@@ -602,189 +847,32 @@ namespace PumpControl2023
             t.Start();
         }
 
-        private void GoButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDispensing) return;
-            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
-            {
-                StartDispensing();
-            }
-        }
-
-        private void SmallMinusButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDispensing) return;
-            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
-            {
-                switch (editingMode)
-                {
-                    case 0:
-                        break;
-                    case 1:
-                        currentSetting.Reps -= 1;
-                        if (currentSetting.Reps < 0) currentSetting.Reps = 0;
-                        repsText.TextContent = currentSetting.Reps.ToString("D");
-                        break;
-                    case 2:
-                        currentSetting.Speed -= 1;
-                        if (currentSetting.Speed < 0) currentSetting.Speed = 0;
-                        speedText.TextContent = currentSetting.Speed.ToString("D");
-                        break;
-                    case 3:
-                        currentSetting.Duration -= 0.1f;
-                        if (currentSetting.Duration < 0) currentSetting.Duration = 0.0f;
-                        durationText.TextContent = currentSetting.Duration.ToString("F1");
-                        break;
-                    case 4:
-                        currentSetting.Interval -= 0.1f;
-                        if (currentSetting.Interval < 0) currentSetting.Interval = 0.0f;
-                        intervalText.TextContent = currentSetting.Interval.ToString("F1");
-                        break;
-                }
-            }
-            SetPumpValues();
-        }
-
-        private void BigMinusButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDispensing) return;
-            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
-            {
-                switch (editingMode)
-                {
-                    case 0:
-                        break;
-                    case 1:
-                        currentSetting.Reps -= 10;
-                        if (currentSetting.Reps < 1) currentSetting.Reps = 1;
-                        repsText.TextContent = currentSetting.Reps.ToString("D");
-                        break;
-                    case 2:
-                        currentSetting.Speed -= 10;
-                        if (currentSetting.Speed < 1) currentSetting.Speed = 1;
-                        speedText.TextContent = currentSetting.Speed.ToString("D");
-                        break;
-                    case 3:
-                        currentSetting.Duration -= 1.0f;
-                        if (currentSetting.Duration < 0.10f) currentSetting.Duration = 0.10f;
-                        durationText.TextContent = currentSetting.Duration.ToString("F1");
-                        break;
-                    case 4:
-                        currentSetting.Interval -= 1.0f;
-                        if (currentSetting.Interval < 0.10f) currentSetting.Interval = 0.10f;
-                        intervalText.TextContent = currentSetting.Interval.ToString("F1");
-                        break;
-                }
-            }
-            SetPumpValues();
-        }
-
-        private void SmallPlusButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDispensing) return;
-            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
-            {
-                switch (editingMode)
-                {
-                    case 0:
-                        break;
-                    case 1:
-                        currentSetting.Reps += 1;
-                        if (currentSetting.Reps > 200) currentSetting.Reps = 200;
-                        repsText.TextContent = currentSetting.Reps.ToString("D");
-                        break;
-                    case 2:
-                        currentSetting.Speed += 1;
-                        if (currentSetting.Speed > 100) currentSetting.Speed = 100;
-                        speedText.TextContent = currentSetting.Speed.ToString("D");
-                        break;
-                    case 3:
-                        currentSetting.Duration += .10f;
-                        if (currentSetting.Duration > 100.0f) currentSetting.Duration = 100.0f;
-                        durationText.TextContent = currentSetting.Duration.ToString("F1");
-                        break;
-                    case 4:
-                        currentSetting.Interval += .10f;
-                        if (currentSetting.Interval > 100.0f) currentSetting.Interval = 100.0f;
-                        intervalText.TextContent = currentSetting.Interval.ToString("F1");
-                        break;
-                }
-            }
-            SetPumpValues();
-        }
-
-        private void BigPlusButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDispensing) return;
-            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
-            {
-                switch (editingMode)
-                {
-                    case 0:
-                        break;
-                    case 1:
-                        currentSetting.Reps += 10;
-                        if (currentSetting.Reps > 200) currentSetting.Reps = 200;
-                        repsText.TextContent = currentSetting.Reps.ToString("D");
-                        break;
-                    case 2:
-                        currentSetting.Speed += 10;
-                        if (currentSetting.Speed > 100) currentSetting.Speed = 100;
-                        speedText.TextContent = currentSetting.Speed.ToString("D");
-                        break;
-                    case 3:
-                        currentSetting.Duration += 1.0f;
-                        if (currentSetting.Duration > 100.0f) currentSetting.Duration = 100.0f;
-                        durationText.TextContent = currentSetting.Duration.ToString("F1");
-                        break;
-                    case 4:
-                        currentSetting.Interval += 1.0f;
-                        if (currentSetting.Interval > 100.0f) currentSetting.Interval = 100.0f;
-                        intervalText.TextContent = currentSetting.Interval.ToString("F1");
-                        break;
-                }
-            }
-            SetPumpValues();
-        }
-
-        private void M1Button_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDispensing) return;
-            textBigPlus.TextContent = "Hi";
-        }     
-
-
+       
         void DispenseThreadWorker()
         {
             bool manualBreak = false;
             int millisecDuration = (int) currentSetting.Duration * 1000;
             int millisecInterval = (int)currentSetting.Interval * 1000;
-            int repsToPump = currentSetting.Reps;
-            while (repsToPump > 0 && !manualBreak)
+            int originalReps = currentSetting.Reps;
+            while (CurrentReps > 0 && !manualBreak)
             {
                 thePump.TriggerDispense();
                 Thread.Sleep(millisecDuration);
                 thePump.TriggerDispense();
-                repsToPump--;
-                Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {                  
-                    repsText.TextContent = repsToPump.ToString("D");
-                    repsText.Invalidate();
-                    return null;
-                }, null);                
+                CurrentReps--;                
                 Thread.Sleep(millisecInterval);
                 if(cancelDispenseThread)
                 {
                     manualBreak = true;
                 }   
             }
+            CurrentReps = originalReps;
             Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
-                repsText.TextContent = currentSetting.Reps.ToString("D");
-                repsText.Invalidate();
+                StopDispensing();
                 return null;
             }, null);
-            StopDispensing();
+        
         }
-
 
         protected override void Active()
         {
@@ -797,5 +885,6 @@ namespace PumpControl2023
         }
 
         protected override void Deactive() => this.canvas.Children.Clear();
+        #endregion
     }
 }
