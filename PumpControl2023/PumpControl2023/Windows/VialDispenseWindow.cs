@@ -53,6 +53,11 @@ namespace PumpControl2023
         DispenseSetting currentSetting;
         PumpControl thePump;
 
+        SPFEZBoard theBoard;
+
+        Settings theSettings;
+
+
         bool cancelDispenseThread;
 
         #region Properties
@@ -89,7 +94,7 @@ namespace PumpControl2023
             }
         }
 
-        float CurrentInterval
+        double CurrentInterval
         {
             get
             {
@@ -106,7 +111,7 @@ namespace PumpControl2023
                 }
             }
         }
-        float CurrentDuration
+        double CurrentDuration
         {
             get
             {
@@ -183,9 +188,11 @@ namespace PumpControl2023
         #endregion
 
         #region UI
-        public VialDispenseWindow(Bitmap icon, string text, int width, int height,PumpControl pump) : base(icon, text, width, height)
+        public VialDispenseWindow(Bitmap icon, string text, int width, int height,PumpControl pump, SPFEZBoard board, Settings settings) : base(icon, text, width, height)
         {
             thePump = pump;
+            theBoard = board;                        
+            theSettings=settings;
         }
 
         private void CreateWindow()
@@ -818,7 +825,6 @@ namespace PumpControl2023
             StopButton.Invalidate();
 
             cancelDispenseThread = true;
-
         }
 
         void StartDispensing()
@@ -851,22 +857,25 @@ namespace PumpControl2023
         void DispenseThreadWorker()
         {
             bool manualBreak = false;
-            int millisecDuration = (int) currentSetting.Duration * 1000;
-            int millisecInterval = (int)currentSetting.Interval * 1000;
+            int millisecDuration = (int)(currentSetting.Duration * 1000.0);
+            int millisecInterval = (int)(currentSetting.Interval * 1000.0);
             int originalReps = currentSetting.Reps;
             while (CurrentReps > 0 && !manualBreak)
             {
-                thePump.TriggerDispense();
+                thePump.TurnDispenseOn();
                 Thread.Sleep(millisecDuration);
-                thePump.TriggerDispense();
+                thePump.TurnDispenseOff();
                 CurrentReps--;                
-                Thread.Sleep(millisecInterval);
+                if(CurrentReps >0)
+                    Thread.Sleep(millisecInterval);
                 if(cancelDispenseThread)
                 {
+                    theBoard.Beep(200);
                     manualBreak = true;
                 }   
-            }
+            } 
             CurrentReps = originalReps;
+            theBoard.Beep(200);
             Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                 StopDispensing();
                 return null;

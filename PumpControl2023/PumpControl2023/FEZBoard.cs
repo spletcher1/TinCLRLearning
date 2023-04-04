@@ -20,15 +20,15 @@ namespace PumpControl2023
 
     // For the Dev Board SCM20260D Dev with 480 x 272 Touchscreen
     // PI6 is pwm for output voltage control for pump speed
+    // The remote wires black (+) and orange (ground) receive the 0V-10V output from the PWM to voltage converter.
     // PB1 is Buzzer
     // PB0 is UserLED
     // PH11 is LED2
     // PF6 is pump trigger (Open drain) - Green wire in remote control cable - Yellow wire is ground
     // PF7 is pump forward/reverse (open drain) - Blue wire in remote control cable - Yellow wire is ground
-    // PF8 is pump prime (open drain) - Orange wire in remote control cable - Yellow wire is ground
-
-
-
+    // PF8 is pump prime (open drain) - Red/Yellow wire in remote control cable - Yellow wire is ground
+    // PA14 is (pulled down) input for detecting motor on state - Utilizes Red/green and Pink wires on the remote cable to connect to 3.3 on NO switch.
+    // PG7 is meant to read PWM from the tachometer when the motor is running. It is connected to the Tan wire on the remote (Grey wire on remote is connected to ground)
 
     abstract public class SPFEZBoard
     {
@@ -41,6 +41,8 @@ namespace PumpControl2023
         protected GpioPin pumpTriggerPin;
         protected GpioPin pumpReversePin;
         protected GpioPin pumpPrimePin;
+
+        protected GpioPin motorOnPin;
 
         protected PwmController buzzerPWMController;
         protected PwmChannel buzzerPWMChannel;
@@ -55,6 +57,14 @@ namespace PumpControl2023
         
         protected RtcController theRTCController;
 
+
+        bool isBuzzerRinging;
+        Timer BuzzerTimer;
+
+        bool IsBuzzerRining
+        {
+            get { return isBuzzerRinging; }
+        }
         #region Properties
 
         public GpioPin PumpTriggerPin
@@ -72,6 +82,30 @@ namespace PumpControl2023
             get { return pumpPrimePin; }
         }
 
+        public GpioPin MotorOnPin
+        {
+            get { return motorOnPin; }
+        }
+
+        public bool IsMotorOn
+        {
+            get
+            {
+                if(motorOnPin != null)
+                {
+                    if(motorOnPin.Read()==GpioPinValue.High)
+                        return true;
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
         #endregion
 
         public SPFEZBoard()
@@ -81,6 +115,18 @@ namespace PumpControl2023
             buzzer = null;
             Button1 = Button2 =  null;
             buzzerPWMController = null;
+            isBuzzerRinging = false;
+            BuzzerTimer = null;
+            BuzzerTimer = null;            
+        }
+
+        void BuzzerTimerTick(object o)
+        {
+            int i = (int)o;            
+            if (i == 0)
+                StopBuzzer();
+            else
+                ToggleBuzzer();
         }
 
         public abstract void SetLed(int led, bool on);
@@ -135,13 +181,30 @@ namespace PumpControl2023
             }
         }
 
-        public void SetBuzzer(int freq, double dutyCycle)
+        protected void SetBuzzer(int freq, double dutyCycle)
         {
             if(buzzerPWMController != null && buzzerPWMChannel != null)
             {
                 buzzerPWMController.SetDesiredFrequency(freq);
                 buzzerPWMChannel.SetActiveDutyCyclePercentage(dutyCycle);
             }
+        }
+
+        public void StopBuzzer()
+        {
+            if(BuzzerTimer != null) { 
+                BuzzerTimer.Dispose();
+                BuzzerTimer = null;
+            }
+            Buzzer = false;
+            isBuzzerRinging = false;
+
+        }
+
+        void StartBuzzer()
+        {            
+            BuzzerTimer = new Timer(BuzzerTimerTick, 0, 0, 500);
+            isBuzzerRinging = true;
         }
         public void ToggleBuzzer()
         {
@@ -167,6 +230,18 @@ namespace PumpControl2023
         {
             if (Button2 != null)
                 Button2Pressed?.Invoke();
+        }
+
+        public void Beep(int ms)
+        {
+            BuzzerTimer = new Timer(BuzzerTimerTick, 0, ms, ms);
+            isBuzzerRinging = true;
+        }
+
+        public void PeriodicBeep()
+        {
+            BuzzerTimer = new Timer(BuzzerTimerTick, 1, 0, 500);
+            isBuzzerRinging = true;
         }
 
     }
@@ -363,6 +438,9 @@ namespace PumpControl2023
             pumpPrimePin.SetDriveMode(GpioPinDriveMode.OutputOpenDrain);
             pumpPrimePin.Write(GpioPinValue.High);
 
+            motorOnPin = GpioController.GetDefault().OpenPin(GHIElectronics.TinyCLR.Pins.SC20260.GpioPin.PA14);
+            motorOnPin.SetDriveMode(GpioPinDriveMode.InputPullDown);            
+
             theDisplay = new SCM26260D_Display();
             Input.Touch.InitializeTouch();            
 
@@ -371,7 +449,7 @@ namespace PumpControl2023
             InitializeUserPWM();
             
         }
-
+        
         void InitializeBuzzer()
         {
             buzzerPWMController = GHIElectronics.TinyCLR.Devices.Pwm.PwmController.FromName(SC20260.Timer.Pwm.Controller3.Id);

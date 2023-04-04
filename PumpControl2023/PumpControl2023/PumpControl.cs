@@ -89,6 +89,10 @@ namespace PumpControl2023
         public void TurnPrimeOff()
         {
             theBoard.PumpPrimePin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.High);
+            // After the prime is toggled off, the pump seems to be in the ON state, so turn it off.
+            TurnDispenseOn();
+            Thread.Sleep(50);
+            TurnDispenseOff();
         }
 
         public void ToggleDirection()
@@ -99,7 +103,17 @@ namespace PumpControl2023
                 theBoard.PumpReversePin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.High);
         }
 
-        public void TriggerDispense()
+        public void TurnDispenseOn()
+        {
+            theBoard.PumpTriggerPin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.Low);
+        }
+
+        public void TurnDispenseOff()
+        {
+            theBoard.PumpTriggerPin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.High);
+        }
+
+        public void TriggerDispensePress()
         {
             theBoard.PumpTriggerPin.Write(GHIElectronics.TinyCLR.Devices.Gpio.GpioPinValue.Low);
             Thread.Sleep(50);

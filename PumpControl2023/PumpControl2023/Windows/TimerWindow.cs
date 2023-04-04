@@ -42,10 +42,13 @@ namespace PumpControl2023
         Button T5Button;
         Button T6Button;
 
+        Button resetButton;
+
         TimeSpan timerTimeSpan;
         TimeSpan beginningTimeSpan;
 
         SPFEZBoard theBoard;
+        Settings theSettings;
 
         private DispatcherTimer timerTimer;
 
@@ -73,13 +76,14 @@ namespace PumpControl2023
             if(timerTimeSpan.TotalMilliseconds <= 0)
             {
                 timerTimer.Stop();
-                theBoard.ToggleBuzzer();                
+                theBoard.PeriodicBeep();                
             }
         }
 
-        public TimerWindow(Bitmap icon, string text, int width, int height, SPFEZBoard board) : base(icon, text, width, height)
+        public TimerWindow(Bitmap icon, string text, int width, int height, SPFEZBoard board, Settings settings) : base(icon, text, width, height)
         {
             theBoard = board;
+            theSettings = settings;
             this.font = Resources.GetFont(Resources.FontResources.droid_reg48);
             this.fontB = Resources.GetFont(Resources.FontResources.droid_reg12);
             OnScreenKeyboard.Font = this.fontB;
@@ -95,7 +99,7 @@ namespace PumpControl2023
             {
                 ForeColor = Colors.White,
             };
-            Canvas.SetLeft(timerText, 120);
+            Canvas.SetLeft(timerText, 100);
             Canvas.SetTop(timerText, 40);
             this.canvas.Children.Add(timerText);
 
@@ -133,7 +137,7 @@ namespace PumpControl2023
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
 
-            var textM1 = new Text(font2, "T1")
+            var textM1 = new Text(font, "T1")
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -160,6 +164,12 @@ namespace PumpControl2023
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
             var textM6 = new Text(font, "T6")
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+
+            var textReset = new Text(font, "Reset")
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -256,13 +266,22 @@ namespace PumpControl2023
                 Height = 60,
             };
 
+            resetButton = new Button()
+            {
+                Child = textReset,
+                Width = 70,
+                Height = 50,
+            };
+
+
+
             plusHourButton.Click += PlusHourButton_Click;
             minusHourButton.Click += MinusHourButton_Click;
             plusMinButton.Click += PlusMinButton_Click;
             minusMinButton.Click += MinusMinButton_Click;
             plusSecButton.Click += PlusSecButton_Click;
             minusSecButton.Click += MinusSecButton_Click;
-
+            resetButton.Click += ResetButton_Click;
            
             Canvas.SetLeft(plusHourButton, 15); Canvas.SetTop(plusHourButton, 140);
             Canvas.SetLeft(minusHourButton, 15); Canvas.SetTop(minusHourButton, 205);
@@ -280,7 +299,9 @@ namespace PumpControl2023
             Canvas.SetLeft(T4Button, 350); Canvas.SetTop(T4Button, 205);
 
             Canvas.SetLeft(T5Button, 415); Canvas.SetTop(T5Button, 140);
-            Canvas.SetLeft(T6Button, 415); Canvas.SetTop(T6Button, 205); 
+            Canvas.SetLeft(T6Button, 415); Canvas.SetTop(T6Button, 205);
+
+            Canvas.SetLeft(resetButton, 395); Canvas.SetTop(resetButton, 53);
 
             this.canvas.Children.Add(plusHourButton);
             this.canvas.Children.Add(minusHourButton);
@@ -294,6 +315,7 @@ namespace PumpControl2023
             this.canvas.Children.Add(T4Button);
             this.canvas.Children.Add(T5Button);
             this.canvas.Children.Add(T6Button);
+            this.canvas.Children.Add(resetButton);
 
             textGo = new Text(font, "GO")
             {
@@ -332,6 +354,17 @@ namespace PumpControl2023
 
         }
 
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (timerTimer.IsEnabled)
+            {
+                timerTimer.Stop();
+            }
+            theBoard.StopBuzzer();
+            timerTimeSpan = TimeSpan.FromSeconds(beginningTimeSpan.TotalSeconds);
+            UpdateTimerText();
+        }
+
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
@@ -342,7 +375,7 @@ namespace PumpControl2023
                 }
                 else
                 {
-                    theBoard.ToggleBuzzer();
+                    theBoard.StopBuzzer();
                     timerTimeSpan = TimeSpan.FromSeconds(beginningTimeSpan.TotalSeconds);
                     UpdateTimerText();
                 }

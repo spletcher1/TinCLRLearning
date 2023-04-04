@@ -22,8 +22,9 @@ namespace PumpControl2023
             SCM20260D theBoard = new SCM20260D();
             PumpControl thePump = new PumpControl(theBoard);
             MyFileSystem theFileSystem = new MyFileSystem();
+            Settings theSettings = theFileSystem.LoadSettings();
 
-                   
+
             MainApp = new Program(theBoard.DisplayController);
             MainWindow mainWindow = new MainWindow(theBoard.DisplayWidth, theBoard.DisplayHeight);
 
@@ -31,15 +32,20 @@ namespace PumpControl2023
             // Create System Window            
             Bitmap iconImageSystem = Resources.GetBitmap(Resources.BitmapResources.AnotherVial);
             string iconTextSystem = "Vials";
-            var vialWindow = new VialDispenseWindow(iconImageSystem, iconTextSystem, theBoard.DisplayWidth, theBoard.DisplayHeight,thePump);
+            var vialWindow = new VialDispenseWindow(iconImageSystem, iconTextSystem, theBoard.DisplayWidth, theBoard.DisplayHeight,thePump, theBoard, theSettings);
 
             mainWindow.RegisterWindow(vialWindow); // Register to MainWindow            
 
             Bitmap iconImageSystem5 = Resources.GetBitmap(Resources.BitmapResources.Timer);
             string iconTextSystem5 = "Timer";
-            var timerWindow = new TimerWindow(iconImageSystem5, iconTextSystem5, theBoard.DisplayWidth, theBoard.DisplayHeight, theBoard);
+            var timerWindow = new TimerWindow(iconImageSystem5, iconTextSystem5, theBoard.DisplayWidth, theBoard.DisplayHeight, theBoard, theSettings);
 
             mainWindow.RegisterWindow(timerWindow);
+
+
+
+
+
 
             ////// Place Holders
             Bitmap iconImageSystem2 = Resources.GetBitmap(Resources.BitmapResources.AnotherBottle);

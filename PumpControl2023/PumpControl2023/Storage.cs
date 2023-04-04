@@ -35,89 +35,55 @@ namespace PumpControl2023
             {
                 // Mount tiny file system
                 theFileSystem.Mount();
-            }            
-        }
-
-
-
-        public void SaveToVialSlot(DispenseSetting s, int slot)
-        {            
-            if (slot < 1) return;
-            if (slot > 4) return;
-            string filename = "V" + slot.ToString() + ".dat}";
-            using (var fsWrite = theFileSystem.Create(filename))
-            {
-                using (var wr = new StreamWriter(fsWrite))
-                {
-                    wr.WriteLine(s.ToString());
-                    wr.Flush();
-                    fsWrite.Flush();
-                }
             }
         }
 
-        public void SaveToBottleSlot(DispenseSetting s, int slot)
+        public Settings LoadSettings()
         {
-            if (slot < 1) return;
-            if (slot > 4) return;
-            string filename = "B" + slot.ToString() + ".dat}";
-            using (var fsWrite = theFileSystem.Create(filename))
-            {
-                using (var wr = new StreamWriter(fsWrite))
-                {
-                    wr.WriteLine(s.ToString());
-                    wr.Flush();
-                    fsWrite.Flush();
-                }
-            }
-        }
-
-        DispenseSetting ReadBottleSlot(int slot)
-        {
-            if (slot < 1) return null;
-            if (slot > 4) return null;
-            string filename = "B" + slot.ToString() + ".dat}";
-            try { 
-            using (var fsRead = theFileSystem.Open(filename, FileMode.Open))
-            {
-                using (var rdr = new StreamReader(fsRead))
-                {
-                    System.String line;
-                    line = rdr.ReadLine();
-                    return new DispenseSetting(line);
-                }
-            }
-            }
-            catch
-            {
-                return new DispenseSetting();
-            }
-
-        }
-
-        DispenseSetting ReadVialSlot(int slot)
-        {
-            if (slot < 1) return null;
-            if (slot > 4) return null;
-            string filename = "B" + slot.ToString() + ".dat}";
+            Settings ss = new Settings();
             try
             {
-                using (var fsRead = theFileSystem.Open(filename, FileMode.Open))
+                using (var fsRead = theFileSystem.Open("Settings.dat", FileMode.Open))
                 {
                     using (var rdr = new StreamReader(fsRead))
                     {
-                        System.String line;
-                        line = rdr.ReadLine();
-                        return new DispenseSetting(line);
+                        for (int i = 0; i < 18; i++) {
+                            System.String line;
+                            line = rdr.ReadLine();
+                            Debug.WriteLine(line);
+                            ss.TheDispenseSettings[i] = new DispenseSetting(line);
+                        }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return new DispenseSetting();
+                ss = new Settings();
+                SaveSettings(ss);
+                Debug.WriteLine(ex.Message);
+                return ss;
             }
-
+            return ss;
         }
+
+        public void SaveSettings(Settings s)
+        {
+            int i;
+            string ss;
+            using (var fsWrite = theFileSystem.Create("Settings.dat"))
+            {
+                using (var wr = new StreamWriter(fsWrite))
+                {
+                    for (i = 0; i < 18; i++) {
+                        ss = s.TheDispenseSettings[i].ToString();
+                        wr.WriteLine(ss);
+                        Debug.WriteLine(ss);
+                    }
+                    wr.Flush();
+                    fsWrite.Flush();
+                }
+            }
+        }       
     
     }
 }
