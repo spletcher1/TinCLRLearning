@@ -47,7 +47,7 @@ namespace PumpControl2023
                 {
                     using (var rdr = new StreamReader(fsRead))
                     {
-                        for (int i = 0; i < 18; i++) {
+                        for (int i = 0; i < ss.TheDispenseSettings.Length; i++) {
                             System.String line;
                             line = rdr.ReadLine();
                             Debug.WriteLine(line);
@@ -74,7 +74,7 @@ namespace PumpControl2023
             {
                 using (var wr = new StreamWriter(fsWrite))
                 {
-                    for (i = 0; i < 18; i++) {
+                    for (i = 0; i < s.TheDispenseSettings.Length; i++) {
                         ss = s.TheDispenseSettings[i].ToString();
                         wr.WriteLine(ss);
                         Debug.WriteLine(ss);

@@ -8,13 +8,13 @@ using System;
 
 namespace PumpControl2023
 {
-    public class VialDispenseWindow : ApplicationWindow
+    public class BottleDispenseWindow : ApplicationWindow
     {
         private Canvas canvas;
-   
+
         Text textBigPlus;
         Text textBigMinus;
-        Text textSmallPlus;        
+        Text textSmallPlus;
         Text textSmallMinus;
 
         Text durationLabel;
@@ -40,7 +40,7 @@ namespace PumpControl2023
         Button bigPlusButton;
         Button bigMinusButton;
         Button smallMinusButton;
-        Button smallPlusButton; 
+        Button smallPlusButton;
         Button V1Button;
         Button V2Button;
         Button V3Button;
@@ -79,10 +79,11 @@ namespace PumpControl2023
             {
                 currentSetting.Speed = value;
                 if (currentSetting.Speed < 0) currentSetting.Speed = 0;
-                else if(currentSetting.Speed > 100) currentSetting.Speed = 100;
-                if(thePump != null)
+                else if (currentSetting.Speed > 100) currentSetting.Speed = 100;
+                if (thePump != null)
                     thePump.Speed = currentSetting.Speed;
-                if(speedText !=null) { 
+                if (speedText != null)
+                {
                     speedText.TextContent = CurrentSpeedString;
                     speedText.Invalidate();
                 }
@@ -129,7 +130,8 @@ namespace PumpControl2023
             {
                 currentSetting.Duration = value;
                 if (currentSetting.Duration < 0) currentSetting.Duration = 0.0f;
-                if(durationText != null) { 
+                if (durationText != null)
+                {
                     durationText.TextContent = currentSetting.Duration.ToString("F1");
                     durationText.Invalidate();
                 }
@@ -140,16 +142,18 @@ namespace PumpControl2023
         int CurrentReps
         {
             get { return currentSetting.Reps; }
-            set {                 
-                currentSetting.Reps = value; 
-                if(currentSetting.Reps < 0)
+            set
+            {
+                currentSetting.Reps = value;
+                if (currentSetting.Reps < 0)
                     currentSetting.Reps = 0;
-                if(repsText != null) {
+                if (repsText != null)
+                {
                     Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                         repsText.TextContent = currentSetting.Reps.ToString("D");
                         repsText.Invalidate();
                         return null;
-                    }, null);                    
+                    }, null);
                 }
             }
         }
@@ -196,14 +200,14 @@ namespace PumpControl2023
         #endregion
 
         #region UI
-        public VialDispenseWindow(Bitmap icon, string text, int width, int height,PumpControl pump, SPFEZBoard board, Settings settings) : base(icon, text, width, height)
+        public BottleDispenseWindow(Bitmap icon, string text, int width, int height, PumpControl pump, SPFEZBoard board, Settings settings) : base(icon, text, width, height)
         {
             var font2 = Resources.GetFont(Resources.FontResources.droid_reg11);
             thePump = pump;
-            theBoard = board;                        
-            theSettings=settings;
+            theBoard = board;
+            theSettings = settings;
             isInSettingMode = false;
-            OnScreenKeyboard.Font = font2;                 
+            OnScreenKeyboard.Font = font2;
         }
 
         private void CreateWindow()
@@ -217,12 +221,12 @@ namespace PumpControl2023
             CurrentSetting = new DispenseSetting();
             // Enable TopBar
             Canvas.SetLeft(this.TopBar, 0); Canvas.SetTop(this.TopBar, 0);
-            this.canvas.Children.Add(this.TopBar);     
-                       
-        }      
+            this.canvas.Children.Add(this.TopBar);
+
+        }
 
         void AddText()
-        {          
+        {
             var font = Resources.GetFont(Resources.FontResources.droid_reg18);
 
             this.canvas.Children.Clear();
@@ -250,10 +254,10 @@ namespace PumpControl2023
             durationLabel.TouchUp += DurationText_TouchUp;
             intervalLabel.TouchUp += IntervalText_TouchUp;
             repsLabel.TouchUp += RepsText_TouchUp;
-            speedLabel.TouchUp += SpeedText_TouchUp;            
+            speedLabel.TouchUp += SpeedText_TouchUp;
 
-            Canvas.SetLeft(repsLabel, 28); Canvas.SetTop(repsLabel, 45); 
-            Canvas.SetLeft(speedLabel, 20); Canvas.SetTop(speedLabel, 85); 
+            Canvas.SetLeft(repsLabel, 28); Canvas.SetTop(repsLabel, 45);
+            Canvas.SetLeft(speedLabel, 20); Canvas.SetTop(speedLabel, 85);
             Canvas.SetLeft(durationLabel, 180); Canvas.SetTop(durationLabel, 45);
             Canvas.SetLeft(intervalLabel, 183); Canvas.SetTop(intervalLabel, 85);
 
@@ -272,7 +276,7 @@ namespace PumpControl2023
                 ForeColor = Colors.White,
             };
 
-            durationText = new GHIElectronics.TinyCLR.UI.Controls.Text(font,CurrentDurationString )
+            durationText = new GHIElectronics.TinyCLR.UI.Controls.Text(font, CurrentDurationString)
             {
                 ForeColor = Colors.White,
             };
@@ -301,10 +305,11 @@ namespace PumpControl2023
         private void SpeedText_TouchUp(object sender, GHIElectronics.TinyCLR.UI.Input.TouchEventArgs e)
         {
             if (isDispensing) return;
-            if (editingMode == 2) {
+            if (editingMode == 2)
+            {
                 SetEditingMode(0);
             }
-            else if(editingMode == 0)
+            else if (editingMode == 0)
             {
                 SetEditingMode(2);
             }
@@ -376,31 +381,31 @@ namespace PumpControl2023
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
 
-            textV1 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Vial1))
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                TextWrap = true,
-            };            
-            textV2 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Vial2))
+            textV1 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Bottle1))
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 TextWrap = true,
             };
-            textV3 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Vial3))
+            textV2 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Bottle2))
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 TextWrap = true,
             };
-            textV4 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Vial4))
+            textV3 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Bottle3))
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 TextWrap = true,
             };
-            textV5 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Vial5))
+            textV4 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Bottle4))
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextWrap = true,
+            };
+            textV5 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Bottle5))
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -601,11 +606,11 @@ namespace PumpControl2023
             {
                 if (isInSettingMode)
                 {
-                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Vial5)] = new DispenseSetting(CurrentSetting);
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Bottle5)] = new DispenseSetting(CurrentSetting);
                     theSettings.SaveSettings();
                     Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                         textSet.ForeColor = Colors.Black;
-                        textV5.TextContent = theSettings.GetButtonName(SettingsIndex.Vial5);
+                        textV5.TextContent = theSettings.GetButtonName(SettingsIndex.Bottle5);
                         textV5.Invalidate();
                         textSet.Invalidate();
                         return null;
@@ -614,7 +619,7 @@ namespace PumpControl2023
                 }
                 else
                 {
-                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Vial5));
+                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Bottle5));
                 }
             }
         }
@@ -625,11 +630,11 @@ namespace PumpControl2023
             {
                 if (isInSettingMode)
                 {
-                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Vial4)] = new DispenseSetting(CurrentSetting);
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Bottle4)] = new DispenseSetting(CurrentSetting);
                     theSettings.SaveSettings();
                     Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                         textSet.ForeColor = Colors.Black;
-                        textV4.TextContent = theSettings.GetButtonName(SettingsIndex.Vial4);
+                        textV4.TextContent = theSettings.GetButtonName(SettingsIndex.Bottle4);
                         textV4.Invalidate();
                         textSet.Invalidate();
                         return null;
@@ -638,7 +643,7 @@ namespace PumpControl2023
                 }
                 else
                 {
-                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Vial4));
+                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Bottle4));
                 }
             }
         }
@@ -649,11 +654,11 @@ namespace PumpControl2023
             {
                 if (isInSettingMode)
                 {
-                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Vial3)] = new DispenseSetting(CurrentSetting);
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Bottle3)] = new DispenseSetting(CurrentSetting);
                     theSettings.SaveSettings();
                     Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                         textSet.ForeColor = Colors.Black;
-                        textV3.TextContent = theSettings.GetButtonName(SettingsIndex.Vial3);
+                        textV3.TextContent = theSettings.GetButtonName(SettingsIndex.Bottle3);
                         textV3.Invalidate();
                         textSet.Invalidate();
                         return null;
@@ -662,7 +667,7 @@ namespace PumpControl2023
                 }
                 else
                 {
-                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Vial3));
+                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Bottle3));
                 }
             }
         }
@@ -673,11 +678,11 @@ namespace PumpControl2023
             {
                 if (isInSettingMode)
                 {
-                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Vial2)] = new DispenseSetting(CurrentSetting);
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Bottle2)] = new DispenseSetting(CurrentSetting);
                     theSettings.SaveSettings();
                     Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                         textSet.ForeColor = Colors.Black;
-                        textV2.TextContent = theSettings.GetButtonName(SettingsIndex.Vial2);
+                        textV2.TextContent = theSettings.GetButtonName(SettingsIndex.Bottle2);
                         textV2.Invalidate();
                         textSet.Invalidate();
                         return null;
@@ -686,7 +691,7 @@ namespace PumpControl2023
                 }
                 else
                 {
-                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Vial2));
+                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Bottle2));
                 }
             }
         }
@@ -705,11 +710,11 @@ namespace PumpControl2023
             {
                 if (isInSettingMode)
                 {
-                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Vial1)] = new DispenseSetting(CurrentSetting);
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Bottle1)] = new DispenseSetting(CurrentSetting);
                     theSettings.SaveSettings();
                     Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                         textSet.ForeColor = Colors.Black;
-                        textV1.TextContent = theSettings.GetButtonName(SettingsIndex.Vial1);
+                        textV1.TextContent = theSettings.GetButtonName(SettingsIndex.Bottle1);
                         textV1.Invalidate();
                         textSet.Invalidate();
                         return null;
@@ -718,16 +723,16 @@ namespace PumpControl2023
                 }
                 else
                 {
-                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Vial1));
+                    SetCurrentSettingToDispenseSetting((int)(SettingsIndex.Bottle1));
                 }
-            }  
+            }
         }
 
         private void SetButton_Click(object sender, RoutedEventArgs e)
         {
             if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
             {
-                 if (isInSettingMode)
+                if (isInSettingMode)
                 {
                     isInSettingMode = false;
                     Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
@@ -912,7 +917,7 @@ namespace PumpControl2023
                     bigMinusButton.IsEnabled = false;
                     bigPlusButton.IsEnabled = false;
                     smallMinusButton.IsEnabled = false;
-                    smallPlusButton.IsEnabled = false;                    
+                    smallPlusButton.IsEnabled = false;
                     editingMode = 0;
                     break;
                 case 1: //Reps                    
@@ -970,7 +975,7 @@ namespace PumpControl2023
                     smallPlusButton.IsEnabled = true;
                     bigPlusButton.Invalidate();
                     editingMode = 4;
-                    break;                 
+                    break;
             }
             bigPlusButton.Invalidate();
             smallPlusButton.Invalidate();
@@ -1028,7 +1033,7 @@ namespace PumpControl2023
             t.Start();
         }
 
-       
+
         void DispenseThreadWorker()
         {
             bool manualBreak = false;
@@ -1040,22 +1045,22 @@ namespace PumpControl2023
                 thePump.TurnDispenseOn();
                 Thread.Sleep(millisecDuration);
                 thePump.TurnDispenseOff();
-                CurrentReps--;                
-                if(CurrentReps >0)
+                CurrentReps--;
+                if (CurrentReps > 0)
                     Thread.Sleep(millisecInterval);
-                if(cancelDispenseThread)
+                if (cancelDispenseThread)
                 {
                     theBoard.Beep(200);
                     manualBreak = true;
-                }   
-            } 
+                }
+            }
             CurrentReps = originalReps;
             theBoard.Beep(200);
             Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
                 StopDispensing();
                 return null;
             }, null);
-        
+
         }
 
         protected override void Active()

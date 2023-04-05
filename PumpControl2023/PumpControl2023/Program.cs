@@ -21,9 +21,9 @@ namespace PumpControl2023
         {
             SCM20260D theBoard = new SCM20260D();
             PumpControl thePump = new PumpControl(theBoard);
-            MyFileSystem theFileSystem = new MyFileSystem();
-            Settings theSettings = theFileSystem.LoadSettings();
-
+          
+            Settings theSettings = new Settings();
+            theSettings.LoadSettings();
 
             MainApp = new Program(theBoard.DisplayController);
             MainWindow mainWindow = new MainWindow(theBoard.DisplayWidth, theBoard.DisplayHeight);
@@ -36,22 +36,23 @@ namespace PumpControl2023
 
             mainWindow.RegisterWindow(vialWindow); // Register to MainWindow            
 
+            Bitmap iconImageSystem2 = Resources.GetBitmap(Resources.BitmapResources.AnotherBottle);
+            string iconTextSystem2 = "Bottles";
+            var bottleWindow = new BottleDispenseWindow(iconImageSystem2, iconTextSystem2, theBoard.DisplayWidth, theBoard.DisplayHeight, thePump, theBoard, theSettings);
+
+            mainWindow.RegisterWindow(bottleWindow);
+
             Bitmap iconImageSystem5 = Resources.GetBitmap(Resources.BitmapResources.Timer);
             string iconTextSystem5 = "Timer";
             var timerWindow = new TimerWindow(iconImageSystem5, iconTextSystem5, theBoard.DisplayWidth, theBoard.DisplayHeight, theBoard, theSettings);
 
-            mainWindow.RegisterWindow(timerWindow);
-
-
+         
 
 
 
 
             ////// Place Holders
-            Bitmap iconImageSystem2 = Resources.GetBitmap(Resources.BitmapResources.AnotherBottle);
-            string iconTextSystem2 = "Bottles";
-            var systemWindow2 = new SystemWindow(iconImageSystem2, iconTextSystem2, theBoard.DisplayWidth, theBoard.DisplayHeight);
-
+         
             Bitmap iconImageSystem3 = Resources.GetBitmap(Resources.BitmapResources.AnotherPlate);
             string iconTextSystem3 = "Plates";
             var systemWindow3= new SystemWindow(iconImageSystem3, iconTextSystem3, theBoard.DisplayWidth, theBoard.DisplayHeight);
@@ -60,11 +61,12 @@ namespace PumpControl2023
             string iconTextSystem4 = "Manual";
             var systemWindow4 = new SystemWindow(iconImageSystem4, iconTextSystem4, theBoard.DisplayWidth, theBoard.DisplayHeight);           
 
-            mainWindow.RegisterWindow(systemWindow2);
+            
             mainWindow.RegisterWindow(systemWindow3);
             mainWindow.RegisterWindow(systemWindow4);
             ///////
-              
+
+            mainWindow.RegisterWindow(timerWindow);
             MainApp.Run(mainWindow);            
         }
 

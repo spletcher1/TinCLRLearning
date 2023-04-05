@@ -53,6 +53,7 @@
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Storage.cs" />
+    <Compile Include="Windows\BottleDispenseWindow.cs" />
     <Compile Include="Windows\SystemWindow.cs" />
     <Compile Include="Windows\TimerWindow.cs" />
     <Compile Include="Utilities\TopBar.cs" />

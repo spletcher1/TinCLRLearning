@@ -3,6 +3,7 @@ using System.Collections;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace PumpControl2023
 {    
@@ -20,7 +21,23 @@ namespace PumpControl2023
         public int Speed { get { return speed; } set { speed = value; } }
         public double Duration { get { return duration; } set { duration = value; } }
         public double Interval { get { return interval; } set { interval = value; } }
-            
+        public string VB_ButtonString
+        {
+            get
+            {
+                 return Reps.ToString("D") +"-"+Duration.ToString("F1")+"-"+Speed.ToString("D")+"-"+Interval.ToString("F1");
+            }
+        }
+
+        public string T_ButtonString
+        {
+            get
+            {
+                TimeSpan timerTimeSpan = TimeSpan.FromSeconds(duration);
+                return TimeSpan.FromSeconds((int)timerTimeSpan.TotalSeconds).ToString("c", new CultureInfo("en-US"));
+            }
+        }
+
         public DispenseSetting()
         {
             name = "NA";
@@ -28,6 +45,15 @@ namespace PumpControl2023
             speed = 30;
             duration = 1.5f;
             interval = 2.0f;
+        }
+
+        public DispenseSetting(DispenseSetting s)
+        {
+            name = s.name;
+            reps = s.Reps;
+            speed = s.Speed;
+            duration = s.Duration;
+            interval = s.Interval;
         }
 
         public DispenseSetting(string setting)

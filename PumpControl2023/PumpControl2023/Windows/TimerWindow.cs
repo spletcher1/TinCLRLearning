@@ -26,6 +26,13 @@ namespace PumpControl2023
         Text textGo;
         Text textStop;
 
+        Text textV1;
+        Text textV2;
+        Text textV3;
+        Text textV4;
+        Text textV5;
+        Text textSet;
+
         Button plusHourButton;
         Button minusHourButton;
         Button plusMinButton;
@@ -40,7 +47,7 @@ namespace PumpControl2023
         Button T3Button;
         Button T4Button;
         Button T5Button;
-        Button T6Button;
+        Button SetButton;
 
         Button resetButton;
 
@@ -49,6 +56,7 @@ namespace PumpControl2023
 
         SPFEZBoard theBoard;
         Settings theSettings;
+        bool isInSettingMode;
 
         private DispatcherTimer timerTimer;
 
@@ -87,14 +95,15 @@ namespace PumpControl2023
             this.font = Resources.GetFont(Resources.FontResources.droid_reg48);
             this.fontB = Resources.GetFont(Resources.FontResources.droid_reg12);
             OnScreenKeyboard.Font = this.fontB;
-            CreateTimerTimer();
-            timerTimeSpan = TimeSpan.FromSeconds(60 * 60);
+            CreateTimerTimer();          
+            timerTimeSpan = TimeSpan.FromSeconds(theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer1)].Duration);
+            isInSettingMode = false;
         }
 
         private void CreateWindow()
         {
             this.canvas.Children.Clear();
-
+            timerTimeSpan = TimeSpan.FromSeconds(theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer1)].Duration);
             timerText = new GHIElectronics.TinyCLR.UI.Controls.Text(this.font, timerTimeSpan.ToString("c", new CultureInfo("en-US")))
             {
                 ForeColor = Colors.White,
@@ -102,7 +111,7 @@ namespace PumpControl2023
             Canvas.SetLeft(timerText, 100);
             Canvas.SetTop(timerText, 40);
             this.canvas.Children.Add(timerText);
-
+            UpdateTimerText();
 
             AddButtons();
 
@@ -111,8 +120,7 @@ namespace PumpControl2023
             this.canvas.Children.Add(this.TopBar);
         }
 
-
-        private void AddButtons()
+        private void SetButtonText()
         {
             var font = Resources.GetFont(Resources.FontResources.droid_reg14);
             var font2 = Resources.GetFont(Resources.FontResources.droid_reg11);
@@ -131,43 +139,55 @@ namespace PumpControl2023
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
-            minusMin= new Text(font, "- Min")
+            minusMin = new Text(font, "- Min")
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
 
-            var textM1 = new Text(font, "T1")
+            textV1 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Timer1))
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextWrap = true,
+            };
+            textV2 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Timer2))
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextWrap = true,
+            };
+            textV3 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Timer3))
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextWrap = true,
+            };
+            textV4 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Timer4))
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextWrap = true,
+            };
+            textV5 = new Text(font2, theSettings.GetButtonName(SettingsIndex.Timer5))
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextWrap = true,
+            };
+            textSet = new Text(font, "Set")
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
-            textM1.TextWrap = true;
-            var textM2 = new Text(font, "T2")
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            var textM3 = new Text(font, "T3")
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            var textM4 = new Text(font, "T4")
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            var textM5 = new Text(font, "T5")
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            var textM6 = new Text(font, "T6")
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
+
+        }
+
+        private void AddButtons()
+        {
+            var font = Resources.GetFont(Resources.FontResources.droid_reg14);
+            var font2 = Resources.GetFont(Resources.FontResources.droid_reg11);
+            SetButtonText(); 
 
             var textReset = new Text(font, "Reset")
             {
@@ -231,37 +251,37 @@ namespace PumpControl2023
 
             T1Button = new Button()
             {
-                Child = textM1,
+                Child = textV1,
                 Width = 60,
                 Height = 60,
             };
             T2Button = new Button()
             {
-                Child = textM2,
+                Child = textV2,
                 Width = 60,
                 Height = 60,
             };
             T3Button = new Button()
             {
-                Child = textM3,
+                Child = textV3,
                 Width = 60,
                 Height = 60,
             };
             T4Button = new Button()
             {
-                Child = textM4,
+                Child = textV4,
                 Width = 60,
                 Height = 60,
             };
             T5Button = new Button()
             {
-                Child = textM5,
+                Child = textV5,
                 Width = 60,
                 Height = 60,
             };
-            T6Button = new Button()
+            SetButton = new Button()
             {
-                Child = textM6,
+                Child = textSet,
                 Width = 60,
                 Height = 60,
             };
@@ -282,7 +302,15 @@ namespace PumpControl2023
             plusSecButton.Click += PlusSecButton_Click;
             minusSecButton.Click += MinusSecButton_Click;
             resetButton.Click += ResetButton_Click;
-           
+
+            T1Button.Click += T1Button_Click;
+            T2Button.Click += T2Button_Click;
+            T3Button.Click += T3Button_Click;
+            T4Button.Click += T4Button_Click;
+            T5Button.Click += T5Button_Click;
+            SetButton.Click += SetButton_Click;
+            
+
             Canvas.SetLeft(plusHourButton, 15); Canvas.SetTop(plusHourButton, 140);
             Canvas.SetLeft(minusHourButton, 15); Canvas.SetTop(minusHourButton, 205);
 
@@ -299,7 +327,7 @@ namespace PumpControl2023
             Canvas.SetLeft(T4Button, 350); Canvas.SetTop(T4Button, 205);
 
             Canvas.SetLeft(T5Button, 415); Canvas.SetTop(T5Button, 140);
-            Canvas.SetLeft(T6Button, 415); Canvas.SetTop(T6Button, 205);
+            Canvas.SetLeft(SetButton, 415); Canvas.SetTop(SetButton, 205);
 
             Canvas.SetLeft(resetButton, 395); Canvas.SetTop(resetButton, 53);
 
@@ -314,7 +342,7 @@ namespace PumpControl2023
             this.canvas.Children.Add(T3Button);
             this.canvas.Children.Add(T4Button);
             this.canvas.Children.Add(T5Button);
-            this.canvas.Children.Add(T6Button);
+            this.canvas.Children.Add(SetButton);
             this.canvas.Children.Add(resetButton);
 
             textGo = new Text(font, "GO")
@@ -352,6 +380,162 @@ namespace PumpControl2023
             this.canvas.Children.Add(goButton);
             this.canvas.Children.Add(stopButton);
 
+        }
+
+        private void SetButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                if (isInSettingMode)
+                {
+                    isInSettingMode = false;
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        textSet.ForeColor = Colors.Black;
+                        textSet.Invalidate();
+                        return null;
+                    }, null);
+                }
+                else
+                {
+                    isInSettingMode = true;
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        textSet.ForeColor = Colors.Red;
+                        textSet.Invalidate();
+                        return null;
+                    }, null);
+                }
+            }
+        }
+
+        private void T1Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                if (isInSettingMode)
+                {
+                    DispenseSetting tmp = new DispenseSetting();
+                    tmp.Duration = timerTimeSpan.TotalSeconds;
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer1)] = tmp;
+                    theSettings.SaveSettings();
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        textSet.ForeColor = Colors.Black;
+                        textV1.TextContent = theSettings.GetButtonName(SettingsIndex.Timer1);
+                        textV1.Invalidate();
+                        textSet.Invalidate();
+                        return null;
+                    }, null);
+                    isInSettingMode = false;
+                }
+                else
+                {                                 
+                    timerTimeSpan = TimeSpan.FromSeconds(theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer1)].Duration);
+                    UpdateTimerText();
+                }
+            }
+        }
+        private void T2Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                if (isInSettingMode)
+                {
+                    DispenseSetting tmp = new DispenseSetting();
+                    tmp.Duration = timerTimeSpan.TotalSeconds;
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer2)] = tmp;
+                    theSettings.SaveSettings();
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        textSet.ForeColor = Colors.Black;
+                        textV2.TextContent = theSettings.GetButtonName(SettingsIndex.Timer2);
+                        textV2.Invalidate();
+                        textSet.Invalidate();
+                        return null;
+                    }, null);
+                    isInSettingMode = false;
+                }
+                else
+                {
+                    timerTimeSpan = TimeSpan.FromSeconds(theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer2)].Duration);
+                    UpdateTimerText();
+                }
+            }
+        }
+        private void T3Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                if (isInSettingMode)
+                {
+                    DispenseSetting tmp = new DispenseSetting();
+                    tmp.Duration = timerTimeSpan.TotalSeconds;
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer3)] = tmp;
+                    theSettings.SaveSettings();
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        textSet.ForeColor = Colors.Black;
+                        textV3.TextContent = theSettings.GetButtonName(SettingsIndex.Timer3);
+                        textV3.Invalidate();
+                        textSet.Invalidate();
+                        return null;
+                    }, null);
+                    isInSettingMode = false;
+                }
+                else
+                {
+                    timerTimeSpan = TimeSpan.FromSeconds(theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer3)].Duration);
+                    UpdateTimerText();
+                }
+            }
+        }
+        private void T4Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                if (isInSettingMode)
+                {
+                    DispenseSetting tmp = new DispenseSetting();
+                    tmp.Duration = timerTimeSpan.TotalSeconds;
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer4)] = tmp;
+                    theSettings.SaveSettings();
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        textSet.ForeColor = Colors.Black;
+                        textV4.TextContent = theSettings.GetButtonName(SettingsIndex.Timer4);
+                        textV4.Invalidate();
+                        textSet.Invalidate();
+                        return null;
+                    }, null);
+                    isInSettingMode = false;
+                }
+                else
+                {
+                    timerTimeSpan = TimeSpan.FromSeconds(theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer4)].Duration);
+                    UpdateTimerText();
+                }
+            }
+        }
+        private void T5Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.RoutedEvent.Name.CompareTo("TouchUpEvent") == 0)
+            {
+                if (isInSettingMode)
+                {
+                    DispenseSetting tmp = new DispenseSetting();
+                    tmp.Duration = timerTimeSpan.TotalSeconds;
+                    theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer5)] = tmp;
+                    theSettings.SaveSettings();
+                    Application.Current.Dispatcher.Invoke(TimeSpan.FromMilliseconds(10), _ => {
+                        textSet.ForeColor = Colors.Black;
+                        textV5.TextContent = theSettings.GetButtonName(SettingsIndex.Timer5);
+                        textV5.Invalidate();
+                        textSet.Invalidate();
+                        return null;
+                    }, null);
+                    isInSettingMode = false;
+                }
+                else
+                {
+                    timerTimeSpan = TimeSpan.FromSeconds(theSettings.TheDispenseSettings[(int)(SettingsIndex.Timer5)].Duration);
+                    UpdateTimerText();
+                }
+            }
         }
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
